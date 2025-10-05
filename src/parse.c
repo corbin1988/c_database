@@ -78,9 +78,14 @@ int output_file(int fd, struct dbheader_t *dbhdr, struct employee_t *employees) 
  * Return: STATUS_SUCCESS on success, STATUS_ERROR on failure
  */
 int validate_db_header(int fd, struct dbheader_t **headerOut) {
-	// Validate file descriptor
+	// Validate input parameters
 	if (fd < 0) {
 		printf("Got a bad FD from the user\n");
+		return STATUS_ERROR;
+	}
+	
+	if (headerOut == NULL) {
+		printf("Invalid headerOut parameter\n");
 		return STATUS_ERROR;
 	}
 
@@ -144,6 +149,12 @@ int validate_db_header(int fd, struct dbheader_t **headerOut) {
  * Return: STATUS_SUCCESS on success, STATUS_ERROR on failure
  */
 int create_db_header(struct dbheader_t **headerOut) {
+	// Validate input parameter
+	if (headerOut == NULL) {
+		printf("Invalid headerOut parameter\n");
+		return STATUS_ERROR;
+	}
+
 	// Allocate and zero-initialize memory for new header
 	struct dbheader_t *header = calloc(1, sizeof(struct dbheader_t));
 	if (header == NULL) {
