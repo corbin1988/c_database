@@ -127,7 +127,7 @@ int main(int argc, char *argv[]) {
     }
 
     if(addstring != NULL) {
-        parse_employee_string(dbhr, &employees, addstring);  
+        add_employee(dbhr, &employees, addstring);  
     }
 
     // Write the database header and employee records to file

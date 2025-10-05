@@ -21,7 +21,32 @@
 #include "common.h"
 #include "parse.h"
 
-int add_employee(struct dbheader_t *dbhdr, struct employee_t **employees) {
+int add_employee(struct dbheader_t *dbhdr, struct employee_t **employees, char *addstring) {
+	// Validate inputs
+	if (dbhdr == NULL || employees == NULL || addstring == NULL) {
+		return STATUS_ERROR;
+	}
+	
+	// Make a copy of the string since strtok modifies it
+	char *addstring_copy = strdup(addstring);
+	if (addstring_copy == NULL) {
+		return STATUS_ERROR;
+	}
+	
+	printf("%s\n", addstring);
+	
+	// Parse the employee data
+	char *name = strtok(addstring_copy, ",");
+	char *addr = strtok(NULL, ",");
+	char *hours = strtok(NULL, ",");
+	
+	if (name == NULL || addr == NULL || hours == NULL) {
+		free(addstring_copy);
+		return STATUS_ERROR;
+	}
+	
+	printf("%s %s %s\n", name, addr, hours);
+	
 	// Increment the employee count
 	dbhdr->count++;
 	
@@ -29,42 +54,24 @@ int add_employee(struct dbheader_t *dbhdr, struct employee_t **employees) {
 	*employees = realloc(*employees, dbhdr->count * sizeof(struct employee_t));
 	if (*employees == NULL) {
 		printf("Failed to allocate memory for employee\n");
+		free(addstring_copy);
 		return STATUS_ERROR;
 	}
 	
-	// Initialize the new employee with test data
-	// For now, using placeholder data - in a real implementation this would come from parameters
-	strncpy((*employees)[dbhdr->count-1].name, "Test Employee", sizeof((*employees)[dbhdr->count-1].name) - 1);
-	strncpy((*employees)[dbhdr->count-1].address, "Test Address", sizeof((*employees)[dbhdr->count-1].address) - 1);
-	(*employees)[dbhdr->count-1].name[sizeof((*employees)[dbhdr->count-1].name) - 1] = '\0';
-	(*employees)[dbhdr->count-1].address[sizeof((*employees)[dbhdr->count-1].address) - 1] = '\0';
-	(*employees)[dbhdr->count-1].hours = 40;
-	
-	return STATUS_SUCCESS;
-}
-
-int parse_employee_string(struct dbheader_t *dbhdr, struct employee_t **employees, char *addstring) {
-	printf("%s\n", addstring);
-
-	char *name = strtok(addstring, ",");
-	char *addr = strtok(NULL, ",");
-	char *hours = strtok(NULL, ",");
-
-	printf("%s %s %s\n", name, addr, hours);
-
-	// First add the employee (this handles memory allocation)
-	if (add_employee(dbhdr, employees) != STATUS_SUCCESS) {
-		return STATUS_ERROR;
-	}
-	
-	// Then update the employee data with parsed values
+	// Copy the parsed data to the new employee
 	strncpy((*employees)[dbhdr->count-1].name, name, sizeof((*employees)[dbhdr->count-1].name) - 1);
 	strncpy((*employees)[dbhdr->count-1].address, addr, sizeof((*employees)[dbhdr->count-1].address) - 1);
 	(*employees)[dbhdr->count-1].name[sizeof((*employees)[dbhdr->count-1].name) - 1] = '\0';
 	(*employees)[dbhdr->count-1].address[sizeof((*employees)[dbhdr->count-1].address) - 1] = '\0';
 	(*employees)[dbhdr->count-1].hours = atoi(hours);
-
+	
+	free(addstring_copy);
 	return STATUS_SUCCESS;
+}
+
+int parse_employee_string(struct dbheader_t *dbhdr, struct employee_t **employees, char *addstring) {
+	// Just call add_employee since it now handles everything
+	return add_employee(dbhdr, employees, addstring);
 }
 
 int read_employees(int fd, struct dbheader_t *dbhdr, struct employee_t **employeesOut) {
