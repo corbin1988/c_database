@@ -9,7 +9,8 @@
 #include <stdio.h>     // For standard I/O operations
 #include <stdbool.h>   // For boolean data type support
 
-#include "file.h"      // For database file operations
+#include "file.h"
+#include "parse.h"    // For database file operations
 #include <common.h>
 
 /**
@@ -43,9 +44,9 @@ int main(int argc, char *argv[]) {
     bool newFile = false;     // Flag indicating whether to create new file
     int c;                    // Variable to store current option character
     
-    // Database file descriptor, bad variable name but it's a tutorial.
-    int dbfd = -1;
-    printf("Hello world");    // Debug output (TODO: Remove in production)
+    // Database file operations variables
+    int dbfd = -1;                    // File descriptor for database file
+    struct dbheader_t *dbhr = NULL;   // Pointer to database header structure
     
     // Parse command line arguments using getopt
     // Format: "nf:" means 'n' takes no argument, 'f' requires an argument
@@ -81,24 +82,43 @@ int main(int argc, char *argv[]) {
         return 0;
     }
 
+    // Handle database file operations based on user request
     if(newFile) {
+        // Create a new database file
         dbfd = create_db_file(filepath);
         if (dbfd == STATUS_ERROR) {
             printf("Unable to create database file \n");
             return -1;
         }
+
+        // Initialize the database header for the new file
+        if(create_db_header(dbfd, &dbhr) == STATUS_ERROR) {
+            printf("Unable to create database header \n");
+            return -1;
+        }
+
     } else {
+        // Open existing database file
         dbfd = open_db_file(filepath);
         if (dbfd == STATUS_ERROR) {
             printf("Unable to open database file \n");
             return -1;
         }
+
+        // Read and validate the existing database header
+        if(validate_db_header(dbfd, &dbhr) == STATUS_ERROR) {
+            printf("Failed to validate database header\n");
+            return -1;
+        }
     }
 
     // Display parsed values for debugging/verification
-    // TODO: Replace with actual database operations
     printf("New file flag: %d\n", newFile);
     printf("Database filepath: %s\n", filepath);
+
+    // Write the database header to file (no employee records yet)
+    // This ensures the file is properly formatted and can be read later
+    output_file(dbfd, dbhr, NULL);
 
     // Program completed successfully
     return 0;
