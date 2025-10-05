@@ -133,7 +133,6 @@ int validate_db_header(int fd, struct dbheader_t **headerOut) {
 
 /**
  * create_db_header - Initialize a new database header structure
- * @fd: File descriptor for the database file (unused but kept for consistency)
  * @headerOut: Pointer to store the newly created header structure
  * 
  * Creates and initializes a new database header with default values:
@@ -144,7 +143,7 @@ int validate_db_header(int fd, struct dbheader_t **headerOut) {
  * 
  * Return: STATUS_SUCCESS on success, STATUS_ERROR on failure
  */
-int create_db_header(int fd, struct dbheader_t **headerOut) {
+int create_db_header(struct dbheader_t **headerOut) {
 	// Allocate and zero-initialize memory for new header
 	struct dbheader_t *header = calloc(1, sizeof(struct dbheader_t));
 	if (header == NULL) {

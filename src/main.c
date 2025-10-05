@@ -92,7 +92,7 @@ int main(int argc, char *argv[]) {
         }
 
         // Initialize the database header for the new file
-        if(create_db_header(dbfd, &dbhr) == STATUS_ERROR) {
+        if(create_db_header(&dbhr) == STATUS_ERROR) {
             printf("Unable to create database header \n");
             return -1;
         }
