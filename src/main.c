@@ -127,7 +127,10 @@ int main(int argc, char *argv[]) {
     }
 
     if(addstring != NULL) {
-        add_employee(dbhr, &employees, addstring);  
+        if(add_employee(dbhr, &employees, addstring) == STATUS_ERROR) {
+            printf("Failed to add employee\n");
+            return -1;
+        }
     }
 
     // Write the database header and employee records to file

@@ -47,16 +47,17 @@ int add_employee(struct dbheader_t *dbhdr, struct employee_t **employees, char *
 	
 	printf("%s %s %s\n", name, addr, hours);
 	
-	// Increment the employee count
-	dbhdr->count++;
-	
-	// Reallocate memory for the new employee
-	*employees = realloc(*employees, dbhdr->count * sizeof(struct employee_t));
-	if (*employees == NULL) {
+	// Reallocate memory for the new employee (before incrementing count)
+	struct employee_t *temp = realloc(*employees, (dbhdr->count + 1) * sizeof(struct employee_t));
+	if (temp == NULL) {
 		printf("Failed to allocate memory for employee\n");
 		free(addstring_copy);
 		return STATUS_ERROR;
 	}
+	*employees = temp;
+	
+	// Only increment the count after successful reallocation
+	dbhdr->count++;
 	
 	// Copy the parsed data to the new employee
 	strncpy((*employees)[dbhdr->count-1].name, name, sizeof((*employees)[dbhdr->count-1].name) - 1);
