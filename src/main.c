@@ -8,6 +8,7 @@
 #include <getopt.h>    // For command line argument parsing
 #include <stdio.h>     // For standard I/O operations
 #include <stdbool.h>   // For boolean data type support
+#include <stdlib.h>    // For memory allocation and process control
 
 #include "file.h"
 #include "parse.h"    // For database file operations
@@ -43,15 +44,17 @@ int main(int argc, char *argv[]) {
     char *filepath = NULL;    // Path to the database file
     bool newFile = false;     // Flag indicating whether to create new file
     int c;                    // Variable to store current option character
+    char *addstring = NULL;  // String for adding employee
     
     // Database file operations variables
     int dbfd = -1;                    // File descriptor for database file
     struct dbheader_t *dbhr = NULL;   // Pointer to database header structure
+    struct employee_t *employees = NULL; // Pointer to employee records array
     
     // Parse command line arguments using getopt
     // Format: "nf:" means 'n' takes no argument, 'f' requires an argument
     // Loop continues until all arguments are processed (getopt returns -1)
-    while ((c = getopt(argc, argv, "nf:")) != -1) {
+    while ((c = getopt(argc, argv, "nf:a:")) != -1) {
         switch (c) {
         case 'n':
             // User specified -n flag to create new database file
@@ -63,7 +66,9 @@ int main(int argc, char *argv[]) {
             // optarg contains the argument value provided after -f
             filepath = optarg;
             break;
-            
+        case 'a':
+            addstring = optarg;
+            break;
         case '?': 
             // getopt encountered an unknown option or missing argument
             printf("Unknown option -%c\n", optopt);
@@ -102,13 +107,13 @@ int main(int argc, char *argv[]) {
         dbfd = open_db_file(filepath);
         if (dbfd == STATUS_ERROR) {
             printf("Unable to open database file \n");
-            return -1;
+            return -1;  // Make sure this actually exits
         }
 
         // Read and validate the existing database header
         if(validate_db_header(dbfd, &dbhr) == STATUS_ERROR) {
             printf("Failed to validate database header\n");
-            return -1;
+            return -1;  // Make sure this actually exits
         }
     }
 
@@ -116,9 +121,20 @@ int main(int argc, char *argv[]) {
     printf("New file flag: %d\n", newFile);
     printf("Database filepath: %s\n", filepath);
 
-    // Write the database header to file (no employee records yet)
+    if(read_employees(dbfd, dbhr, &employees) == STATUS_ERROR) {
+        printf("Failed to read employees from database\n");
+        return -1;
+    }
+
+    if(addstring != NULL) {
+        dbhr->count++;
+        employees = realloc(employees, dbhr->count * (sizeof(struct employee_t)));
+        add_employee(dbhr, employees, addstring);  
+    }
+
+    // Write the database header and employee records to file
     // This ensures the file is properly formatted and can be read later
-    output_file(dbfd, dbhr, NULL);
+    output_file(dbfd, dbhr, employees);
 
     // Program completed successfully
     return 0;
