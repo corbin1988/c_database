@@ -22,25 +22,43 @@
 #include "parse.h"
 
 int add_employee(struct dbheader_t *dbhdr, struct employee_t **employees, char *addstring) {
+	printf("[DEBUG] add_employee called\n");
+	
 	// Validate inputs
+	printf("[DEBUG] Checking inputs: dbhdr=%p, employees=%p, addstring=%p\n", 
+	       (void*)dbhdr, (void*)employees, (void*)addstring);
 	if (dbhdr == NULL || employees == NULL || addstring == NULL) {
+		printf("[DEBUG] NULL input detected, returning error\n");
 		return STATUS_ERROR;
 	}
 	
+	printf("[DEBUG] Input string: %s\n", addstring);
+	printf("[DEBUG] Current count: %d\n", dbhdr->count);
+	
 	// Make a copy of the string since strtok modifies it
-	char *addstring_copy = strdup(addstring);
+	printf("[DEBUG] Making string copy...\n");
+	size_t len = strlen(addstring);
+	char *addstring_copy = malloc(len + 1);
 	if (addstring_copy == NULL) {
+		printf("[DEBUG] malloc failed\n");
 		return STATUS_ERROR;
 	}
+	strcpy(addstring_copy, addstring);
+	printf("[DEBUG] String copied\n");
 	
 	printf("%s\n", addstring);
 	
 	// Parse the employee data
+	printf("[DEBUG] Parsing employee data...\n");
 	char *name = strtok(addstring_copy, ",");
+	printf("[DEBUG] Name parsed: %s\n", name ? name : "NULL");
 	char *addr = strtok(NULL, ",");
+	printf("[DEBUG] Address parsed: %s\n", addr ? addr : "NULL");
 	char *hours = strtok(NULL, ",");
+	printf("[DEBUG] Hours parsed: %s\n", hours ? hours : "NULL");
 	
 	if (name == NULL || addr == NULL || hours == NULL) {
+		printf("[DEBUG] Parse failed, cleaning up\n");
 		free(addstring_copy);
 		return STATUS_ERROR;
 	}
@@ -48,6 +66,7 @@ int add_employee(struct dbheader_t *dbhdr, struct employee_t **employees, char *
 	printf("%s %s %s\n", name, addr, hours);
 	
 	// Reallocate memory for the new employee (before incrementing count)
+	printf("[DEBUG] Reallocating memory for %d employees...\n", dbhdr->count + 1);
 	struct employee_t *temp = realloc(*employees, (dbhdr->count + 1) * sizeof(struct employee_t));
 	if (temp == NULL) {
 		printf("Failed to allocate memory for employee\n");
@@ -55,18 +74,25 @@ int add_employee(struct dbheader_t *dbhdr, struct employee_t **employees, char *
 		return STATUS_ERROR;
 	}
 	*employees = temp;
+	printf("[DEBUG] Memory reallocation successful\n");
 	
 	// Only increment the count after successful reallocation
 	dbhdr->count++;
+	printf("[DEBUG] Count incremented to %d\n", dbhdr->count);
 	
 	// Copy the parsed data to the new employee
+	printf("[DEBUG] Copying employee data...\n");
 	strncpy((*employees)[dbhdr->count-1].name, name, sizeof((*employees)[dbhdr->count-1].name) - 1);
+	printf("[DEBUG] Name copied\n");
 	strncpy((*employees)[dbhdr->count-1].address, addr, sizeof((*employees)[dbhdr->count-1].address) - 1);
+	printf("[DEBUG] Address copied\n");
 	(*employees)[dbhdr->count-1].name[sizeof((*employees)[dbhdr->count-1].name) - 1] = '\0';
 	(*employees)[dbhdr->count-1].address[sizeof((*employees)[dbhdr->count-1].address) - 1] = '\0';
 	(*employees)[dbhdr->count-1].hours = atoi(hours);
+	printf("[DEBUG] Hours set to %d\n", (*employees)[dbhdr->count-1].hours);
 	
 	free(addstring_copy);
+	printf("[DEBUG] add_employee completed successfully\n");
 	return STATUS_SUCCESS;
 }
 
