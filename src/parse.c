@@ -80,8 +80,13 @@ int read_employees(int fd, struct dbheader_t *dbhdr, struct employee_t **employe
 		return STATUS_ERROR;
 	}
 
-
 	int count = dbhdr->count;
+
+	// Handle case where there are no employees yet
+	if (count == 0) {
+		*employeesOut = NULL;
+		return STATUS_SUCCESS;
+	}
 
 	struct employee_t *employees = calloc(count, sizeof(struct employee_t));
 	if (employees == NULL) {
