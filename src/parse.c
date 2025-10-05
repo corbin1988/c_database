@@ -21,23 +21,48 @@
 #include "common.h"
 #include "parse.h"
 
-int add_employee(struct dbheader_t *dbhdr, struct employee_t *employees, char *addstring) {
+int add_employee(struct dbheader_t *dbhdr, struct employee_t **employees) {
+	// Increment the employee count
+	dbhdr->count++;
+	
+	// Reallocate memory for the new employee
+	*employees = realloc(*employees, dbhdr->count * sizeof(struct employee_t));
+	if (*employees == NULL) {
+		printf("Failed to allocate memory for employee\n");
+		return STATUS_ERROR;
+	}
+	
+	// Initialize the new employee with test data
+	// For now, using placeholder data - in a real implementation this would come from parameters
+	strncpy((*employees)[dbhdr->count-1].name, "Test Employee", sizeof((*employees)[dbhdr->count-1].name) - 1);
+	strncpy((*employees)[dbhdr->count-1].address, "Test Address", sizeof((*employees)[dbhdr->count-1].address) - 1);
+	(*employees)[dbhdr->count-1].name[sizeof((*employees)[dbhdr->count-1].name) - 1] = '\0';
+	(*employees)[dbhdr->count-1].address[sizeof((*employees)[dbhdr->count-1].address) - 1] = '\0';
+	(*employees)[dbhdr->count-1].hours = 40;
+	
+	return STATUS_SUCCESS;
+}
+
+int parse_employee_string(struct dbheader_t *dbhdr, struct employee_t **employees, char *addstring) {
 	printf("%s\n", addstring);
 
 	char *name = strtok(addstring, ",");
-
 	char *addr = strtok(NULL, ",");
-
 	char *hours = strtok(NULL, ",");
 
 	printf("%s %s %s\n", name, addr, hours);
 
+	// First add the employee (this handles memory allocation)
+	if (add_employee(dbhdr, employees) != STATUS_SUCCESS) {
+		return STATUS_ERROR;
+	}
 	
-	strncpy(employees[dbhdr->count-1].name, name, sizeof(employees[dbhdr->count-1].name));
-	strncpy(employees[dbhdr->count-1].address, addr, sizeof(employees[dbhdr->count-1].address));
-
-	employees[dbhdr->count-1].hours = atoi(hours);
-	
+	// Then update the employee data with parsed values
+	strncpy((*employees)[dbhdr->count-1].name, name, sizeof((*employees)[dbhdr->count-1].name) - 1);
+	strncpy((*employees)[dbhdr->count-1].address, addr, sizeof((*employees)[dbhdr->count-1].address) - 1);
+	(*employees)[dbhdr->count-1].name[sizeof((*employees)[dbhdr->count-1].name) - 1] = '\0';
+	(*employees)[dbhdr->count-1].address[sizeof((*employees)[dbhdr->count-1].address) - 1] = '\0';
+	(*employees)[dbhdr->count-1].hours = atoi(hours);
 
 	return STATUS_SUCCESS;
 }

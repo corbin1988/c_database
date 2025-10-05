@@ -127,9 +127,7 @@ int main(int argc, char *argv[]) {
     }
 
     if(addstring != NULL) {
-        dbhr->count++;
-        employees = realloc(employees, dbhr->count * (sizeof(struct employee_t)));
-        add_employee(dbhr, employees, addstring);  
+        parse_employee_string(dbhr, &employees, addstring);  
     }
 
     // Write the database header and employee records to file
