@@ -9,6 +9,9 @@
 #include <stdio.h>     // For standard I/O operations
 #include <stdbool.h>   // For boolean data type support
 
+#include "file.h"      // For database file operations
+#include <common.h>
+
 /**
  * print_usage - Display program usage information
  * @argv: Array of command line arguments (argv[0] is program name)
@@ -40,6 +43,8 @@ int main(int argc, char *argv[]) {
     bool newFile = false;     // Flag indicating whether to create new file
     int c;                    // Variable to store current option character
     
+    // Database file descriptor, bad variable name but it's a tutorial.
+    int dbfd = -1;
     printf("Hello world");    // Debug output (TODO: Remove in production)
     
     // Parse command line arguments using getopt
@@ -74,6 +79,20 @@ int main(int argc, char *argv[]) {
         printf("Filepath is required argument\n");
         print_usage(argv);  // Show usage information to help user
         return 0;
+    }
+
+    if(newFile) {
+        dbfd = create_db_file(filepath);
+        if (dbfd == STATUS_ERROR) {
+            printf("Unable to create database file \n");
+            return -1;
+        }
+    } else {
+        dbfd = open_db_file(filepath);
+        if (dbfd == STATUS_ERROR) {
+            printf("Unable to open database file \n");
+            return -1;
+        }
     }
 
     // Display parsed values for debugging/verification
