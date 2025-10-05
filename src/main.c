@@ -45,6 +45,7 @@ int main(int argc, char *argv[]) {
     bool newFile = false;     // Flag indicating whether to create new file
     int c;                    // Variable to store current option character
     char *addstring = NULL;  // String for adding employee
+    bool list = false;      // Flag for listing employees
     
     // Database file operations variables
     int dbfd = -1;                    // File descriptor for database file
@@ -54,7 +55,7 @@ int main(int argc, char *argv[]) {
     // Parse command line arguments using getopt
     // Format: "nf:" means 'n' takes no argument, 'f' requires an argument
     // Loop continues until all arguments are processed (getopt returns -1)
-    while ((c = getopt(argc, argv, "nf:a:")) != -1) {
+    while ((c = getopt(argc, argv, "nf:a:l")) != -1) {
         switch (c) {
         case 'n':
             // User specified -n flag to create new database file
@@ -69,14 +70,17 @@ int main(int argc, char *argv[]) {
         case 'a':
             addstring = optarg;
             break;
-        case '?': 
-            // getopt encountered an unknown option or missing argument
-            printf("Unknown option -%c\n", optopt);
+        case 'l':
+                    list = true;
             break;
-            
-        default:
-            // Unexpected return value from getopt (should not happen)
-            return -1;
+            case '?': 
+                // getopt encountered an unknown option or missing argument
+                printf("Unknown option -%c\n", optopt);
+                break;
+                
+            default:
+                // Unexpected return value from getopt (should not happen)
+                return -1;
         }
     }
 
@@ -131,6 +135,10 @@ int main(int argc, char *argv[]) {
             printf("Failed to add employee\n");
             return -1;
         }
+    }
+
+    if(list) {
+        list_employees(dbhr, employees);
     }
 
     // Write the database header and employee records to file
